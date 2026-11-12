@@ -6,13 +6,20 @@
 > Claude Code Bash tool fails on Windows (`ENAMETOOLONG` / `-c: unexpected EOF`). Upstream issues: #18, #54
 > (unmerged fix: #19). Everything else follows upstream; see [NOTICE](NOTICE) for the statement of changes.
 >
-> ```bash
-> claude plugin marketplace add rionmint/grok-build-plugin-cc
-> claude plugin install grok-build@rionmint-grok-build
+> In a Claude Code session:
+>
+> ```text
+> /plugin marketplace remove xai-grok-build
+> /plugin marketplace add rionmint/grok-build-plugin-cc
+> /plugin install grok-build@rionmint-grok-build
+> /reload-plugins
+> /grok-build:check
 > ```
 >
-> Remove the upstream install first (`claude plugin uninstall grok-build@xai-grok-build` and
-> `claude plugin marketplace remove xai-grok-build`) so the two do not both register `/grok-build:*`.
+> The first line removes the upstream marketplace, which also uninstalls `grok-build@xai-grok-build`, so the two do
+> not both register `/grok-build:*`. Skip it if you never installed upstream. From a shell, the same steps are
+> `claude plugin marketplace remove xai-grok-build`, `claude plugin marketplace add rionmint/grok-build-plugin-cc`
+> and `claude plugin install grok-build@rionmint-grok-build`.
 
 Bridge [Grok Build](https://x.ai) into Claude Code for review, critique, delegation, and session import.
 
