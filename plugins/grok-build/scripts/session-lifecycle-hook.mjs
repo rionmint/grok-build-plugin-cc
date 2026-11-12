@@ -27,7 +27,39 @@ function appendEnvVar(name, value) {
   if (!process.env.CLAUDE_ENV_FILE || value == null || value === "") {
     return;
   }
-  fs.appendFileSync(process.env.CLAUDE_ENV_FILE, `export ${name}=${shellEscape(value)}\n`, "utf8");
+  // rionmint fork change 2026-11-12 (see NOTICE):
+  // SessionStart fires on every resume and compaction and the host inlines this file
+  // into every Bash call, so appending made the file grow until Bash failed
+  // (ENAMETOOLONG / "-c: unexpected EOF"). The file is this hook's own, so each write
+  // keeps only the last export of every variable - same environment, bounded size.
+  const envFile = process.env.CLAUDE_ENV_FILE;
+  const line = `export ${name}=${shellEscape(value)}`;
+  let current = "";
+  try {
+    current = fs.readFileSync(envFile, "utf8");
+  } catch (error) {
+    if (error?.code !== "ENOENT") {
+      throw error;
+    }
+  }
+  const entries = current.split(/\r?\n/).filter((entry) => entry !== "");
+  entries.push(line);
+  const exportedName = (entry) => /^export ([A-Za-z_][A-Za-z0-9_]*)=/.exec(entry)?.[1] ?? null;
+  const lastIndex = new Map();
+  entries.forEach((entry, index) => {
+    const variable = exportedName(entry);
+    if (variable) {
+      lastIndex.set(variable, index);
+    }
+  });
+  const kept = entries.filter((entry, index) => {
+    const variable = exportedName(entry);
+    return variable === null || lastIndex.get(variable) === index;
+  });
+  const next = `${kept.join("\n")}\n`;
+  if (next !== current) {
+    fs.writeFileSync(envFile, next, "utf8");
+  }
 }
 
 function cleanupSessionJobs(cwd, sessionId) {

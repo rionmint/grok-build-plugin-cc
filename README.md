@@ -1,5 +1,19 @@
 # Grok Build ↔ Claude Code Bridge
 
+> **rionmint fork.** This is a fork of [xai-org/grok-build-plugin-cc](https://github.com/xai-org/grok-build-plugin-cc)
+> with one fix: the SessionStart hook no longer appends to `CLAUDE_ENV_FILE` on every resume and compaction. It now
+> keeps only the last `export` of each variable, so the file stays a few hundred bytes instead of growing until the
+> Claude Code Bash tool fails on Windows (`ENAMETOOLONG` / `-c: unexpected EOF`). Upstream issues: #18, #54
+> (unmerged fix: #19). Everything else follows upstream; see [NOTICE](NOTICE) for the statement of changes.
+>
+> ```bash
+> claude plugin marketplace add rionmint/grok-build-plugin-cc
+> claude plugin install grok-build@rionmint-grok-build
+> ```
+>
+> Remove the upstream install first (`claude plugin uninstall grok-build@xai-grok-build` and
+> `claude plugin marketplace remove xai-grok-build`) so the two do not both register `/grok-build:*`.
+
 Bridge [Grok Build](https://x.ai) into Claude Code for review, critique, delegation, and session import.
 
 This repository is a Claude Code marketplace plugin that shells out to the real `grok` CLI. Run status, results, and stop are owned by the plugin (PID + log files). There is no app-server broker.

@@ -16,3 +16,19 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+Modifications by rionmint (fork https://github.com/rionmint/grok-build-plugin-cc)
+-----------------------------------------------------------------------------------
+Statement of changes (Apache-2.0 section 4(b)), 2026-11-12:
+
+  * plugins/grok-build/scripts/session-lifecycle-hook.mjs: appendEnvVar no
+    longer appends to CLAUDE_ENV_FILE. It reads the file, adds the new export,
+    keeps only the last export of every variable (other lines are left as they
+    are) and writes the file back only when it changed.
+  * tests/session-env-file.test.mjs: new tests for the above.
+  * Marketplace renamed from "xai-grok-build" to "rionmint-grok-build";
+    version 0.2.1-rionmint.1 in package.json, plugin.json and marketplace.json;
+    plugin author shown as "xAI (rionmint fork)".
+  * README.md: a fork note at the top.
+
+This fork is not affiliated with or endorsed by xAI.
