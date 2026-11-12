@@ -7,7 +7,7 @@ import { writeExecutable } from "./helpers.mjs";
 /**
  * Install a fake `grok` binary that responds to version/models/-p/import for hermetic tests.
  * @param {string} binDir directory that will be prepended to PATH
- * @param {"default"|"not-logged-in"|"fail-print"|"import-ok"} scenario
+ * @param {"default"|"not-logged-in"|"unauthenticated-exit-0"|"fail-print"|"import-ok"} scenario
  */
 export function installFakeGrok(binDir, scenario = "default") {
   fs.mkdirSync(binDir, { recursive: true });
@@ -51,6 +51,10 @@ if (argv[0] === "models") {
   if (scenario === "not-logged-in") {
     process.stderr.write("Not logged in. Run grok interactively to authenticate.\\n");
     process.exit(1);
+  }
+  if (scenario === "unauthenticated-exit-0") {
+    process.stdout.write("You are not authenticated.\\n");
+    process.exit(0);
   }
   process.stdout.write("You are logged in with grok.com.\\n\\nDefault model: fake-model\\n\\nAvailable models:\\n  - fake-model\\n");
   process.exit(0);
@@ -110,6 +114,11 @@ process.exit(1);
 `;
 
   writeExecutable(scriptPath, source);
+  if (process.platform === "win32") {
+    // rionmint fork: cmd.exe never runs the extensionless script, so without this shim the real
+    // grok later on PATH answered instead and the hermetic tests checked the live login.
+    fs.writeFileSync(path.join(binDir, "grok.cmd"), `@node "%~dp0grok" %*\r\n`, "utf8");
+  }
   return scriptPath;
 }
 

@@ -50,6 +50,18 @@ test("getGrokAuthStatus treats failed models as not logged in", () => {
   assert.match(auth.detail, /Not logged in|not logged in|failed/i);
 });
 
+// rionmint fork: a real grok 1.0.77 printed "You are not authenticated." and exited 0, and
+// /grok-build:check reported loggedIn: true with that text as the detail.
+test("getGrokAuthStatus treats a not-authenticated message as not logged in even on exit 0", () => {
+  const binDir = makeTempDir();
+  installFakeGrok(binDir, "unauthenticated-exit-0");
+  const env = buildEnv(binDir);
+
+  const auth = getGrokAuthStatus(process.cwd(), { env });
+  assert.equal(auth.loggedIn, false);
+  assert.match(auth.detail, /not authenticated/i);
+});
+
 test("runHeadlessAgent captures stdout and session id from fake grok", async () => {
   const binDir = makeTempDir();
   installFakeGrok(binDir);
@@ -85,6 +97,22 @@ test("runImport parses session id from fake grok json output", () => {
 
   assert.equal(result.sessionId, "11111111-2222-4333-8444-555555555555");
   assert.equal(result.resumeCommand, "grok -r 11111111-2222-4333-8444-555555555555");
+});
+
+// rionmint fork: on Windows runCommand ran grok through a shell with the args joined unquoted
+// (Node DEP0190), so a transcript path with a space or "&" did not reach grok as one argument.
+test("runImport passes a source path with spaces and shell metacharacters as one argument", () => {
+  const binDir = makeTempDir();
+  installFakeGrok(binDir);
+  const env = buildEnv(binDir);
+  const sourcePath = path.join(makeTempDir(), "with space & more", "sess (1).jsonl");
+
+  const result = runImport(process.cwd(), {
+    sourcePath,
+    env
+  });
+
+  assert.equal(result.parsed?.source, sourcePath);
 });
 
 test("parseStructuredOutput extracts fenced JSON", () => {

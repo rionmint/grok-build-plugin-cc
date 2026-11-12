@@ -1,6 +1,6 @@
 {
   "name": "grok-build",
-  "version": "0.2.1-rionmint.1",
+  "version": "0.2.1-rionmint.2",
   "description": "Grok Build ↔ Claude Code bridge for review, critique, and delegation.",
   "author": {
     "name": "xAI (rionmint fork)"

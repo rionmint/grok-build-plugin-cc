@@ -31,4 +31,18 @@ Statement of changes (Apache-2.0 section 4(b)), 2026-11-12:
     plugin author shown as "xAI (rionmint fork)".
   * README.md: a fork note at the top.
 
+Statement of changes, 2026-11-12 (version 0.2.1-rionmint.2):
+
+  * plugins/grok-build/scripts/lib/grok.mjs: runModelsProbe reports
+    loggedIn: false when "grok models" prints "not authenticated" or
+    "not logged in", even if it exits 0.
+  * plugins/grok-build/scripts/lib/process.mjs: runCommand on Windows with a
+    shell quotes each argument that needs it and passes one command line, so
+    an argument with a space or "&" is no longer split or run as a second
+    command (and Node's DEP0190 warning is gone). New export quoteForShell.
+  * tests/fake-grok-fixture.mjs: an "unauthenticated-exit-0" scenario, and a
+    grok.cmd shim on Windows so cmd.exe finds the fake grok.
+  * tests/grok-cli.test.mjs, tests/process.test.mjs: tests for the above.
+  * tests/bump-version.test.mjs: checks the fork version instead of 0.2.1.
+
 This fork is not affiliated with or endorsed by xAI.

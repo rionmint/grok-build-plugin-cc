@@ -153,6 +153,24 @@ test("runCommand honors an explicit shell override", () => {
   assert.equal(captured.options.shell, false);
 });
 
+// rionmint fork: Node joined shell args unquoted (DEP0190) and split them on Windows.
+test("runCommand hands a Windows shell one quoted command line", () => {
+  let captured = null;
+
+  runCommand("grok", ["import", "C:\\Users\\a b\\x & y.jsonl", "--json", "C:\\dir\\", 'say "hi"'], {
+    shell: true,
+    platform: "win32",
+    spawnSyncImpl(command, args, options) {
+      captured = { command, args, options };
+      return { status: 0, signal: null, stdout: "", stderr: "", error: null };
+    }
+  });
+
+  assert.equal(captured.command, 'grok import "C:\\Users\\a b\\x & y.jsonl" --json "C:\\dir\\\\" "say \\"hi\\""');
+  assert.deepEqual(captured.args, []);
+  assert.equal(captured.options.shell, true);
+});
+
 test("runCommand keeps metacharacter args discrete when shell is disabled", () => {
   let captured = null;
   const maliciousRef = "main&probe.cmd";

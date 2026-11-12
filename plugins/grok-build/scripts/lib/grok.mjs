@@ -106,6 +106,21 @@ export function runModelsProbe(cwd, options = {}) {
   }
 
   const stdout = (result.stdout || "").trim();
+  // rionmint fork change 2026-11-12 (see NOTICE): grok 1.0.77 printed "You are not authenticated."
+  // and still exited 0, which used to be reported as logged in with that text as the detail.
+  const NOT_AUTH = /not authenticated|not logged in/i;
+  const notAuthLine = `${stdout}\n${result.stderr || ""}`
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => NOT_AUTH.test(line));
+  if (notAuthLine) {
+    return buildAuthStatus({
+      available: true,
+      loggedIn: false,
+      detail: notAuthLine,
+      source: "models-probe"
+    });
+  }
   const loggedInHint = /logged in|available models|default model/i.test(stdout);
   return buildAuthStatus({
     available: true,

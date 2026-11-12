@@ -10,19 +10,34 @@ function sleepMs(ms) {
   Atomics.wait(new Int32Array(buffer), 0, 0, duration);
 }
 
+// rionmint fork change 2026-11-12 (see NOTICE): with a shell, Node joins the args without
+// quoting them (DEP0190), so on Windows an argument with a space was split in two and one with
+// "&" ran the rest as a second command. Quote each argument that needs it (Windows argv rules:
+// backslashes are doubled only before a quote or at the end) and hand the shell one command line.
+export function quoteForShell(arg) {
+  const text = String(arg);
+  if (text !== "" && !/[\s"&|<>^()%!;,=`$'\\]/.test(text)) {
+    return text;
+  }
+  return `"${text.replace(/(\\*)"/g, '$1$1\\"').replace(/(\\+)$/, "$1$1")}"`;
+}
+
 export function runCommand(command, args = [], options = {}) {
   const spawnSyncImpl = options.spawnSyncImpl ?? spawnSync;
+  const platform = options.platform ?? process.platform;
   // Windows may need a shell to resolve .cmd shims (e.g. tool CLIs). Callers
   // that pass repository-derived argv (especially git refs) must force
   // shell: false — see git.mjs — so shell metacharacters are not expanded.
-  const result = spawnSyncImpl(command, args, {
+  const shell = options.shell ?? (platform === "win32" ? (process.env.SHELL || true) : false);
+  const asCommandLine = Boolean(shell) && platform === "win32" && args.length > 0;
+  const result = spawnSyncImpl(asCommandLine ? [command, ...args].map(quoteForShell).join(" ") : command, asCommandLine ? [] : args, {
     cwd: options.cwd,
     env: options.env,
     encoding: "utf8",
     input: options.input,
     maxBuffer: options.maxBuffer,
     stdio: options.stdio ?? "pipe",
-    shell: options.shell ?? (process.platform === "win32" ? (process.env.SHELL || true) : false),
+    shell,
     windowsHide: true
   });
 

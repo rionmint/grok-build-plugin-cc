@@ -74,7 +74,10 @@ test("bump-version check mode reports stale metadata", () => {
   assert.match(result.stderr, /\.claude-plugin\/marketplace\.json metadata\.version/);
 });
 
-test("repo manifests are in sync at 0.2.1", () => {
-  const result = run("node", [SCRIPT, "--check", "0.2.1"], { cwd: ROOT });
+// rionmint fork: the version is <upstream>-rionmint.N and moves with every fork release.
+test("repo manifests are in sync at the 0.2.1 fork version", () => {
+  const { version } = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
+  assert.match(version, /^0\.2\.1-rionmint\.\d+$/);
+  const result = run("node", [SCRIPT, "--check", version], { cwd: ROOT });
   assert.equal(result.status, 0, result.stderr);
 });

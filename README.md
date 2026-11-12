@@ -1,10 +1,18 @@
 # Grok Build ↔ Claude Code Bridge
 
 > **rionmint fork.** This is a fork of [xai-org/grok-build-plugin-cc](https://github.com/xai-org/grok-build-plugin-cc)
-> with one fix: the SessionStart hook no longer appends to `CLAUDE_ENV_FILE` on every resume and compaction. It now
-> keeps only the last `export` of each variable, so the file stays a few hundred bytes instead of growing until the
-> Claude Code Bash tool fails on Windows (`ENAMETOOLONG` / `-c: unexpected EOF`). Upstream issues: #18, #54
-> (unmerged fix: #19). Everything else follows upstream; see [NOTICE](NOTICE) for the statement of changes.
+> with these fixes:
+>
+> - The SessionStart hook no longer appends to `CLAUDE_ENV_FILE` on every resume and compaction. It keeps only the
+>   last `export` of each variable, so the file stays a few hundred bytes instead of growing until the Claude Code
+>   Bash tool fails on Windows (`ENAMETOOLONG` / `-c: unexpected EOF`). Upstream issues: #18, #54 (unmerged fix: #19).
+> - `/grok-build:check` no longer reports `loggedIn: true` when `grok models` prints "You are not authenticated." and
+>   exits 0.
+> - On Windows, arguments passed through the shell are quoted, so a path with a space or `&` (for example a
+>   transcript path given to `/grok-build:import`) reaches `grok` as one argument. This also removes Node's `DEP0190`
+>   warning from `/grok-build:check`.
+>
+> Everything else follows upstream; see [NOTICE](NOTICE) for the statement of changes.
 >
 > In a Claude Code session:
 >
